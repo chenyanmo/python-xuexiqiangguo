@@ -15,7 +15,7 @@ class AutoControl():
     main_url = 'https://www.xuexi.cn'
     caps = DesiredCapabilities().FIREFOX
     caps["pageLoadStrategy"] = "eager"
-    TestingMode = False
+    TestingMode = True
     option = Options()
     option.headless = True
     login_url = 'https://pc.xuexi.cn/points/login.html?ref=https://pc.xuexi.cn/points/my-study.html'
@@ -70,11 +70,31 @@ setInterval(startscroll,20)
 
     def study(self):
         # read 6 articles
-        self.study_shijian(7)
-        self.close_session()
-        sleep(2)
-        self.watch_tv(7)
-        self.close_session()
+        key = 'yes'
+        option = input('select 1 for reading article, 2 for video, 3 for all')
+        if option == '1':
+            try:
+                self.study_shijian(7)
+            except Exception as e:
+                print(e)
+            self.close_session()
+            sleep(2)
+        elif option == '2':
+            try:
+                self.watch_tv(7)
+            except Exception as e:
+                print(e)
+            self.close_session()
+            sleep(2)
+        else:
+            try:
+                self.study_shijian(7)
+                self.close_session()
+                self.watch_tv(7)
+                self.close_session()
+            except Exception as e:
+                print(e)
+                return self.study()
 
     def multi_article(self, times):
         sleep(3)
