@@ -7,6 +7,7 @@ from time import sleep
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 import logging
 from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.firefox.options import Options
 import threading
 
 
@@ -14,6 +15,9 @@ class AutoControl():
     main_url = 'https://www.xuexi.cn'
     caps = DesiredCapabilities().FIREFOX
     caps["pageLoadStrategy"] = "eager"
+    TestingMode = False
+    option = Options()
+    option.headless = True
     login_url = 'https://pc.xuexi.cn/points/login.html?ref=https://pc.xuexi.cn/points/my-study.html'
     mypoints = '/points/my-points.html'
     scroll_js = '''
@@ -107,6 +111,7 @@ setInterval(startscroll,20)
         self.driver.switch_to.window(self.driver.window_handles[1])
         element = WebDriverWait(self.driver, 60).until(
             EC.presence_of_element_located((By.XPATH, '//div[@class="screen"]')))
+
         for n in range(1, number):
             print("start reading article of %d"
                   % n)
@@ -123,15 +128,22 @@ setInterval(startscroll,20)
                         stale = True
                 sleep(1)
                 self.driver.switch_to.window(self.driver.window_handles[2])
+                WebDriverWait(self.driver, 40).until(
+                    EC.presence_of_element_located((By.XPATH, '//div[@class="screen"]')))
                 self.reading_action()
                 # reading duration
-                sleep(300)
+                if self.TestingMode:
+                    sleep(8)
+                else:
+                    sleep(300)
                 self.driver.close()
                 self.driver.switch_to.window(self.driver.window_handles[1])
                 print("finished")
             except Exception as e:
                 print(e)
                 logging.warning("reading failed try for next article")
+                self.driver.close()
+                self.driver.switch_to.window(self.driver.window_handles[1])
 
     # back to main page
     def close_session(self):
@@ -186,7 +198,10 @@ setInterval(startscroll,20)
 
                 print('video length:' + str(duration))
                 # video watching duration
-                sleep(duration)
+                if self.TestingMode:
+                    sleep(duration / 100)
+                else:
+                    sleep(duration)
                 self.driver.close()
                 self.driver.switch_to.window(self.driver.window_handles[1])
             except Exception as e:
@@ -214,6 +229,7 @@ def main():
         return main()
     return auto
 
+
 try:
     auto = main()
     auto.login()
@@ -221,4 +237,3 @@ try:
     auto.study()
 except TimeoutException:
     print('网速过慢，建议不学习')
-
